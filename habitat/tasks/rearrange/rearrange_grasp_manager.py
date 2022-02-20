@@ -136,12 +136,12 @@ class RearrangeGraspManager:
             return self._sim.create_rigid_constraint(c)
 
         self._snap_constraints = [
-            create_hold_constraint(mn.Vector3(0.1, 0, 0), mn.Vector3(0, 0, 0)),
+            create_hold_constraint(mn.Vector3(0, 0.05, 0), mn.Vector3(0, 0, 0)),
             create_hold_constraint(
-                mn.Vector3(0.0, 0, 0), mn.Vector3(-0.1, 0, 0)
+                mn.Vector3(0.0, 0, 0), mn.Vector3(0, -0.05, 0)
             ),
             create_hold_constraint(
-                mn.Vector3(0.1, 0.0, 0.1), mn.Vector3(0.0, 0.0, 0.1)
+                mn.Vector3(0.0, 0.0, 0.05), mn.Vector3(0.0, -0.05, 0.05)
             ),
         ]
 

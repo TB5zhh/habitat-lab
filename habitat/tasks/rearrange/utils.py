@@ -162,13 +162,13 @@ def rearrange_collision(
 
 
 def get_nav_mesh_settings(agent_config):
-    return get_nav_mesh_settings_from_height(agent_config.HEIGHT)
+    return get_nav_mesh_settings_from_height(agent_config.HEIGHT, agent_config.RADIUS)
 
 
-def get_nav_mesh_settings_from_height(height):
+def get_nav_mesh_settings_from_height(height, radius):
     navmesh_settings = NavMeshSettings()
     navmesh_settings.set_defaults()
-    navmesh_settings.agent_radius = 0.4
+    navmesh_settings.agent_radius = radius
     navmesh_settings.agent_height = height
     navmesh_settings.agent_max_climb = 0.05
     return navmesh_settings

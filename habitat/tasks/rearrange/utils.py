@@ -171,6 +171,7 @@ def get_nav_mesh_settings_from_height(height, radius):
     navmesh_settings.agent_radius = radius
     navmesh_settings.agent_height = height
     navmesh_settings.agent_max_climb = 0.05
+    navmesh_settings.cell_height = 0.01
     return navmesh_settings
 
 

@@ -25,10 +25,7 @@ try:
     from habitat_baselines.config.default import get_config
     from habitat_baselines.rl.ddppo.ddp_utils import find_free_port
     from habitat_baselines.run import execute_exp, run_exp
-    from habitat_baselines.utils.common import (
-        ObservationBatchingCache,
-        batch_obs,
-    )
+    from habitat_baselines.utils.common import batch_obs
 
     baseline_installed = True
 except ImportError:
@@ -100,6 +97,47 @@ def test_trainers(test_cfg_path, mode, gpu2gpu, observation_transforms):
             str(gpu2gpu),
             "RL.POLICY.OBS_TRANSFORMS.ENABLED_TRANSFORMS",
             str(tuple(observation_transforms)),
+        ],
+    )
+
+    # Needed to destroy the trainer
+    gc.collect()
+
+    # Deinit processes group
+    if torch.distributed.is_initialized():
+        torch.distributed.destroy_process_group()
+
+
+@pytest.mark.skipif(
+    not baseline_installed, reason="baseline sub-module not installed"
+)
+@pytest.mark.parametrize(
+    "test_cfg_path", glob("habitat_baselines/config/test/ddppo_pointnav*")
+)
+@pytest.mark.parametrize("variable_experience", [True, False])
+@pytest.mark.parametrize("overlap_rollouts_and_learn", [True, False])
+def test_ver_trainer(
+    test_cfg_path,
+    variable_experience,
+    overlap_rollouts_and_learn,
+):
+    # For testing with world_size=1
+    os.environ["MAIN_PORT"] = str(find_free_port())
+
+    run_exp(
+        test_cfg_path,
+        "train",
+        [
+            "NUM_ENVIRONMENTS",
+            3,
+            "TRAINER_NAME",
+            "ver",
+            "RL.VER.variable_experience",
+            str(variable_experience),
+            "RL.VER.overlap_rollouts_and_learn",
+            str(overlap_rollouts_and_learn),
+            "RL.POLICY.OBS_TRANSFORMS.ENABLED_TRANSFORMS",
+            "['CenterCropper', 'ResizeShortestEdge']",
         ],
     )
 
@@ -357,7 +395,6 @@ def test_batch_obs(sensor_device, batched_device):
 
     numpy_if = lambda t: t.numpy() if sensor_device.type == "cpu" else t
 
-    cache = ObservationBatchingCache()
     sensors = [
         {
             f"{s}": numpy_if(torch.randn(128, 128, device=sensor_device))
@@ -366,4 +403,4 @@ def test_batch_obs(sensor_device, batched_device):
         for _ in range(4)
     ]
 
-    _ = batch_obs(sensors, device=batched_device, cache=cache)
+    _ = batch_obs(sensors, device=batched_device)
